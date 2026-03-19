@@ -1,12 +1,12 @@
 import OpenAI from "openai"
-import { Intent } from "../types/agent"
+import { billingIntent, Intent, supportIntent, unknownIntent } from "../types/intent"
 
 const openai = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
   baseURL: "https://openrouter.ai/api/v1"
 })
 
-const VALID_INTENTS: Intent[] = ["billing", "support"]
+const VALID_INTENTS: Intent[] = [billingIntent, supportIntent]
 const intentList = [...VALID_INTENTS, "unknown"].join("\n- ")
 
 export async function classifyIntent(text: string): Promise<Intent> {
@@ -35,13 +35,13 @@ export async function classifyIntent(text: string): Promise<Intent> {
 
     if (!raw_content) {
       console.error("Invalid LLM response:", completion)
-      return "unknown"
+      return unknownIntent
     }
 
-    return VALID_INTENTS.includes(raw_content as Intent) ? raw_content as Intent : "unknown"
+    return VALID_INTENTS.includes(raw_content as Intent) ? raw_content as Intent : unknownIntent
 
   } catch (error) {
     console.error("LLM failed, using fallback classifier:", error)
-    return "unknown"
+    return unknownIntent
   }
 }

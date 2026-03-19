@@ -1,5 +1,3 @@
-export type Intent = "billing" | "support" | "unknown"
-
 export interface AgentResponse { 
   reply: string | null 
 }
