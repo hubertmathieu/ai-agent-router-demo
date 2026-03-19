@@ -7,38 +7,41 @@ const openai = new OpenAI({
 })
 
 const VALID_INTENTS: Intent[] = ["billing", "support"]
+const intentList = [...VALID_INTENTS, "unknown"].join("\n- ")
 
 export async function classifyIntent(text: string): Promise<Intent> {
-  const completion = await openai.chat.completions.create({
-    model: "stepfun/step-3.5-flash:free",
-    messages: [
-      {
-        role: "system",
-        content: `
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "stepfun/step-3.5-flash:free",
+      messages: [
+        {
+          role: "system",
+          content: `
             You are an intent classifier.
 
             Possible intents:
-            - billing
-            - support
-            - unknown
+            - ${intentList}
 
             Return ONLY one word.`
-      },
-      {
-        role: "user",
-        content: text
-      }
-    ]
-  })
+        },
+        {
+          role: "user",
+          content: text
+        }
+      ]
+    })
 
-  console.log("LLM response:", JSON.stringify(completion, null, 2))
+    const raw_content = completion.choices[0]?.message?.content?.trim().toLowerCase()
 
-  const raw_content = completion.choices[0]?.message?.content?.trim().toLowerCase()
+    if (!raw_content) {
+      console.error("Invalid LLM response:", completion)
+      return "unknown"
+    }
 
-  if (!raw_content) {
-    console.error("Invalid LLM response:", completion)
+    return VALID_INTENTS.includes(raw_content as Intent) ? raw_content as Intent : "unknown"
+
+  } catch (error) {
+    console.error("LLM failed, using fallback classifier:", error)
     return "unknown"
   }
-
-  return VALID_INTENTS.includes(raw_content as Intent) ? raw_content as Intent : "unknown"
 }
