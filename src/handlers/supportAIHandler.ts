@@ -1,28 +1,39 @@
 import OpenAI from "openai"
+import { HandlerResponse } from "../types/agent"
 
 const openai = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
   baseURL: "https://openrouter.ai/api/v1"
 })
 
-export async function supportHandler(message: string) {
-  const completion = await openai.chat.completions.create({
-    model: "stepfun/step-3.5-flash:free",
-    messages: [
-      {
-        role: "system",
-        content: "You are a helpful technical support assistant."
-      },
-      {
-        role: "user",
-        content: message
-      }
-    ]
-  })
+export async function supportHandler(message: string): Promise<HandlerResponse> {
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "stepfun/step-3.5-flash:free",
+      messages: [
+        {
+          role: "system",
+          content: "You are a helpful technical support assistant."
+        },
+        {
+          role: "user",
+          content: message
+        }
+      ]
+    })
 
-  console.log("LLM response:", JSON.stringify(completion, null, 2))
+    const raw_content = completion.choices[0]?.message?.content
 
-  return {
-    reply: completion.choices[0].message.content
+    return {
+      reply: raw_content || "Sorry, I couldn't find an answer to your question right now."
+    }
+
+  } catch (error) {
+
+    console.error("LLM failed, returning fallback response:", error)
+
+    return {
+      reply: "Sorry, I'm having trouble accessing the support knowledge base right now. Please try again later."
+    }
   }
 }
