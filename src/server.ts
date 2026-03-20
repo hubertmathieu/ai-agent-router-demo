@@ -4,8 +4,10 @@ dotenv.config()
 import express from "express"
 import chatRouter from "./routes/chat"
 
-if (!process.env.OPENROUTER_API_KEY) {
-  throw new Error("Missing OPENROUTER_API_KEY in environment variables")
+const requiredEnvVars = ["OPENROUTER_API_KEY", "OPENROUTER_API_BASE_URL", "OPENROUTER_MODEL"]
+
+for (const key of requiredEnvVars) {
+  if (!process.env[key]) throw new Error(`Missing ${key} in environment variables`)
 }
 
 const app = express()

@@ -3,13 +3,13 @@ import { HandlerResponse } from "../types/agent"
 
 const openai = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
-  baseURL: "https://openrouter.ai/api/v1"
+  baseURL: process.env.OPENROUTER_API_BASE_URL
 })
 
 export async function supportHandler(message: string): Promise<HandlerResponse> {
   try {
     const completion = await openai.chat.completions.create({
-      model: "stepfun/step-3.5-flash:free",
+      model: process.env.OPENROUTER_MODEL!,
       messages: [
         {
           role: "system",

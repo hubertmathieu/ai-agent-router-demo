@@ -3,7 +3,7 @@ import { billingIntent, Intent, supportIntent, unknownIntent } from "../types/in
 
 const openai = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
-  baseURL: "https://openrouter.ai/api/v1"
+  baseURL: process.env.OPENROUTER_API_BASE_URL
 })
 
 const VALID_INTENTS: Intent[] = [billingIntent, supportIntent]
@@ -12,7 +12,7 @@ const intentList = [...VALID_INTENTS, "unknown"].join("\n- ")
 export async function classifyIntent(text: string): Promise<Intent> {
   try {
     const completion = await openai.chat.completions.create({
-      model: "stepfun/step-3.5-flash:free",
+      model: process.env.OPENROUTER_MODEL!,
       messages: [
         {
           role: "system",
